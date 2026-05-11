@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "mysql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  rfidTag           String   @unique
+  name              String
+  email             String   @unique
+  password          String?
+  twoFASecret       String?
+  twoFAEnabled      Boolean  @default(false)
+  rfidAsPassword    Boolean  @default(false)
+  role              Role     @default(STUDENT)
+  status            Status   @default(ACTIVE)
+  grade             String?
+  maxBooks          Int      @default(3)
+  emailNotifications Boolean @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  transactions      Transaction[]
+  reservations      Reservation[]
+  notificationLogs  NotificationLog[]
+}
+
+model Book {
+  id            String   @id @default(uuid())
+  isbn          String   @unique
+  rfidTag       String   @unique
+  title         String
+  author        String
+  publisher     String?
+  category      String
+  quantity      Int      @default(1)
+  totalQuantity Int      @default(1)
+  location      String?
+  status        BookStatus @default(AVAILABLE)
+  condition     String   @default("GOOD")
+  borrowCount   Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  transactions  Transaction[]
+  reservations  Reservation[]
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  userId        String
+  bookId        String
+  type          TransactionType
+  status        TransactionStatus @default(ACTIVE)
+  borrowDate    DateTime @default(now())
+  dueDate       DateTime
+  returnedAt    DateTime?
+  renewalCount  Int      @default(0)
+  quantity      Int      @default(0)
+  returnQuantity Int      @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+  book          Book     @relation(fields: [bookId], references: [id])
+}
+
+model Reservation {
+  id            String   @id @default(uuid())
+  userId        String
+  bookId        String
+  status        ReservationStatus @default(WAITING)
+  queuePosition Int?
+  expiresAt     DateTime?
+  notifiedAt    DateTime?
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+  book          Book     @relation(fields: [bookId], references: [id])
+}
+
+model NotificationLog {
+  id            String   @id @default(uuid())
+  userId        String
+  type          NotificationType
+  message       String
+  emailStatus   String   @default("SENT")
+  errorMessage  String?
+  sentAt        DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model RFIDLog {
+  id            String   @id @default(uuid())
+  rfidTag       String
+  action        String
+  userId        String?
+  bookId        String?
+  success       Boolean
+  message       String?
+  createdAt     DateTime @default(now())
+}
+
+// Enums must be defined separately, each on its own block
+enum Role {
+  STUDENT
+  TEACHER
+  STAFF
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum BookStatus {
+  AVAILABLE
+  BORROWED
+  RESERVED
+  MAINTENANCE
+}
+
+enum TransactionType {
+  BORROW
+  RETURN
+}
+
+enum TransactionStatus {
+  ACTIVE
+  COMPLETED
+  OVERDUE
+}
+
+enum ReservationStatus {
+  WAITING
+  READY
+  EXPIRED
+  CANCELLED
+}
+
+enum NotificationType {
+  DUE_REMINDER
+  OVERDUE
+  BORROW_CONFIRMATION
+  RETURN_CONFIRMATION
+}

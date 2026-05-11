@@ -1,0 +1,24 @@
+{
+  "name": "Library Management System",
+  "short_name": "LibraryRM",
+  "description": "RFID-based Library Management System Admin Dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdfbf8",
+  "theme_color": "#FFC680",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
